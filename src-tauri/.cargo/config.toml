@@ -1,0 +1,13 @@
+[build]
+# Use the system's default target
+target-dir = "target"
+
+[target.x86_64-pc-windows-msvc]
+linker = "link.exe"
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+

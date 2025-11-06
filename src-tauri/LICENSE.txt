@@ -1,0 +1,76 @@
+FIRM AI - END USER LICENSE AGREEMENT
+
+Copyright (c) 2024 FIRM AI. All rights reserved.
+
+This is the End User License Agreement (EULA) for FIRM AI, an AI-powered legal 
+learning platform.
+
+1. LICENSE GRANT
+   This EULA grants you a non-exclusive, non-transferable, limited license to 
+   install and use FIRM AI on your personal computer for educational purposes.
+
+2. PERMITTED USE
+   You may:
+   - Install and use FIRM AI on your personal devices
+   - Use the AI-powered features for legal education and study
+   - Upload and analyze legal cases for personal learning
+   - Generate quizzes, flashcards, and study materials
+
+3. RESTRICTIONS
+   You may NOT:
+   - Redistribute, sublicense, or sell FIRM AI
+   - Reverse engineer, decompile, or disassemble the software
+   - Remove or alter any copyright notices or branding
+   - Use the software for commercial purposes without permission
+   - Share your account credentials with others
+
+4. INTELLECTUAL PROPERTY
+   FIRM AI and all associated intellectual property rights are owned by FIRM AI.
+   This license does not grant you any rights to trademarks, service marks, or 
+   logos.
+
+5. AI-GENERATED CONTENT
+   - AI-generated content (IRAC analyses, quizzes, etc.) is provided for 
+     educational purposes only
+   - FIRM AI is not a substitute for professional legal advice
+   - Users are responsible for verifying the accuracy of AI-generated content
+   - Do not rely solely on AI-generated content for exam preparation
+
+6. DATA AND PRIVACY
+   - Your uploaded cases and study data are stored securely
+   - We use OpenRouter AI and Supabase for processing and storage
+   - See our Privacy Policy for detailed information
+   - You own your uploaded content and can delete it anytime
+
+7. DISCLAIMER OF WARRANTY
+   FIRM AI IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. WE DO NOT WARRANT 
+   THAT THE SOFTWARE WILL BE ERROR-FREE OR UNINTERRUPTED.
+
+8. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL FIRM AI BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, 
+   OR CONSEQUENTIAL DAMAGES ARISING FROM THE USE OF THIS SOFTWARE.
+
+9. TERMINATION
+   This license is effective until terminated. Your rights will terminate 
+   automatically if you fail to comply with these terms.
+
+10. GOVERNING LAW
+    This EULA shall be governed by and construed in accordance with applicable 
+    laws.
+
+11. UPDATES AND MODIFICATIONS
+    FIRM AI may provide updates or modifications to the software. This EULA 
+    applies to all versions and updates.
+
+12. ENTIRE AGREEMENT
+    This EULA constitutes the entire agreement between you and FIRM AI regarding 
+    the use of this software.
+
+By installing FIRM AI, you acknowledge that you have read this agreement, 
+understand it, and agree to be bound by its terms and conditions.
+
+For questions or support, visit: https://firmai.com
+
+FIRM AI - AI-Powered Legal Learning
+Version 0.1.0
+

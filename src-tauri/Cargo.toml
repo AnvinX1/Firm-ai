@@ -1,0 +1,39 @@
+[package]
+name = "firm-ai"
+version = "0.1.0"
+description = "FIRM AI - AI-Powered Law Learning Platform"
+authors = ["FIRM AI Team"]
+license = "MIT"
+repository = ""
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0", features = [] }
+tauri-plugin-shell = "2.0"
+tauri-plugin-dialog = "2.0"
+tauri-plugin-fs = "2.0"
+tauri-plugin-http = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
+thiserror = "1.0"
+regex = "1.10"
+postgrest = "1.5"
+rusqlite = { version = "0.30", features = ["bundled"] }
+tokio-rusqlite = "0.5"
+chrono = { version = "0.4", features = ["serde"] }
+lopdf = "0.33"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+[features]
+# This feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]
+
