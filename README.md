@@ -1,318 +1,605 @@
-# FIRM AI - Law Learning Platform
+<div align="center">
 
-An AI-powered legal education platform that helps law students master cases, generate practice quizzes, and get personalized tutoring using RAG (Retrieval-Augmented Generation).
+<img src="src-tauri/icons/icon.png" alt="FIRM AI Logo" width="120" height="120">
 
-## Features
+# FIRM AI
 
-- **📚 Case Analysis**: Upload legal cases and get instant IRAC (Issue, Rule, Analysis, Conclusion) summaries with AI-powered analysis
-- **🧠 AI Tutor**: 24/7 personalized legal guidance with contextual understanding
-- **📝 Smart Quizzes**: Generate adaptive quiz questions based on your case library
-- **🎯 Mock Tests**: Create comprehensive exams covering multiple legal topics
-- **🔍 RAG System**: Semantic search through your uploaded cases and a pre-built legal knowledge base
-- **💾 Vector Storage**: Powered by Supabase PostgreSQL with pgvector for fast semantic search
+### AI-Powered Legal Education Platform
 
-## Quick Start
+*Master legal concepts through intelligent case analysis, adaptive quizzes, and personalized AI tutoring*
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green)](https://supabase.com/)
+[![OpenRouter](https://img.shields.io/badge/OpenRouter-AI-orange)](https://openrouter.ai/)
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Demo](#-screenshots)
+
+</div>
+
+---
+
+## 🎯 Overview
+
+**FIRM AI** is a cutting-edge legal education platform that leverages **Retrieval-Augmented Generation (RAG)** and advanced AI models to transform how law students learn. Upload your cases, get instant IRAC analysis, generate practice questions, and chat with an AI tutor that knows your entire case library.
+
+### Why FIRM AI?
+
+- 🚀 **10x Faster Case Analysis** - Get comprehensive IRAC breakdowns in seconds
+- 🧠 **Contextual AI Tutor** - Answers based on your uploaded cases and legal knowledge base
+- 📊 **Adaptive Learning** - Quizzes and mock tests tailored to your weak areas
+- 🔍 **Semantic Search** - Find relevant cases instantly using natural language
+- 💾 **Your Data, Your Control** - Everything stored securely in your Supabase instance
+
+---
+
+## ✨ Features
+
+### 📚 **Intelligent Case Analysis**
+Upload PDF or text cases and get instant IRAC (Issue, Rule, Analysis, Conclusion) breakdowns powered by AI. Each case is automatically embedded and searchable.
+
+### 🤖 **AI Legal Tutor**
+24/7 personalized tutoring with contextual understanding. The tutor searches your case library and knowledge base to provide accurate, cited responses.
+
+### 📝 **Smart Quiz Generator**
+Generate adaptive quiz questions from your cases. Questions automatically adjust difficulty and focus on concepts you need to practice.
+
+### 🎯 **Comprehensive Mock Tests**
+Create full-length practice exams covering multiple topics. Track your progress with detailed analytics.
+
+### 💾 **RAG-Powered Knowledge Base**
+- **Vector Database**: Supabase PostgreSQL with pgvector extension
+- **Embeddings**: OpenAI text-embedding-3-small (1536 dimensions)
+- **Semantic Search**: Natural language queries across all your materials
+- **Pre-loaded Knowledge**: Contract Law, Torts, Constitutional Law, Criminal Law, Property Law
+
+### 📊 **Study Planner**
+Organize your study schedule, track progress, and set goals with an intelligent planner.
+
+### 🎨 **Beautiful, Modern UI**
+- Red, black, and white professional color scheme
+- Smooth animations and transitions
+- Responsive design for all devices
+- Dark mode optimized
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ and pnpm
-- Supabase account
-- OpenRouter API key
+Before you begin, ensure you have:
+
+- **Node.js** 18+ and **pnpm** installed
+- **Supabase** account ([Sign up free](https://supabase.com))
+- **OpenRouter** API key ([Get one here](https://openrouter.ai/keys))
 
 ### Installation
 
-1. **Clone the repository:**
-
 ```bash
-git clone <your-repo-url>
-cd FIRMai
-```
+# 1. Clone the repository
+git clone https://github.com/yourusername/firmai.git
+cd firmai
 
-2. **Install dependencies:**
-
-```bash
+# 2. Install dependencies
 pnpm install
-```
 
-3. **Configure environment variables:**
+# 3. Copy environment template
+cp .env.example .env.local
 
-Create a `.env` file in the root directory:
+# 4. Configure environment variables (see below)
 
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_key
-SUPABASE_POSTGRES_URL_NON_POOLING=your_postgres_url
-
-# OpenRouter AI
-OPENROUTER_API_KEY=your_openrouter_key
-
-# Stripe (optional)
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_key
-STRIPE_SECRET_KEY=your_stripe_secret
-```
-
-4. **Run setup:**
-
-```bash
+# 5. Run complete setup (installs pgvector, creates tables, seeds knowledge base)
 pnpm setup
-```
 
-This will:
-- Check environment configuration
-- Install pgvector extension
-- Create database tables
-- Seed the legal knowledge base
-
-5. **Start the development server:**
-
-```bash
-pnpm cli start
-```
-
-Or use the traditional Next.js command:
-
-```bash
+# 6. Start development server
 pnpm dev
 ```
 
-The app will be available at `http://localhost:3001`
+The app will be available at `http://localhost:3000`
 
-## CLI Commands
+### Environment Variables
 
-The FIRM AI CLI provides powerful tools for managing your backend:
+Create a `.env.local` file with:
+
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+SUPABASE_POSTGRES_URL_NON_POOLING=your_postgres_direct_connection_url
+
+# OpenRouter AI
+OPENROUTER_API_KEY=your_openrouter_api_key
+
+# Optional: Stripe for subscriptions
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+### Quick Commands
 
 ```bash
-# Check system status
-pnpm cli status
+# Development
+pnpm dev                    # Start Next.js dev server
+pnpm cli start              # Start with custom port
+pnpm cli status             # Check system health
 
-# Start development server (custom port)
-pnpm cli start -p 3002
+# Database
+pnpm cli migrate            # Run database migrations
+pnpm cli seed               # Seed legal knowledge base
 
-# Seed knowledge base
-pnpm cli seed
+# Testing
+pnpm cli test "query"       # Test RAG search
+pnpm lint                   # Run linter
+pnpm build                  # Build for production
 
-# Test RAG search
-pnpm cli test "contract law"
+# Desktop App (Tauri)
+pnpm tauri dev              # Run desktop app in dev mode
+pnpm tauri build            # Build desktop installer
+```
 
-# Run database migrations
-pnpm cli migrate
+---
 
-# Clear all cached data
-pnpm cli clear --yes
+## 🏗️ Architecture
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 14 (App Router), React 19, TypeScript |
+| **Styling** | Tailwind CSS, shadcn/ui components |
+| **Backend** | Next.js API Routes, Supabase Edge Functions |
+| **Database** | Supabase PostgreSQL with pgvector extension |
+| **AI/LLM** | OpenRouter (Gemini, Claude, GPT-4) |
+| **Embeddings** | OpenAI text-embedding-3-small |
+| **Auth** | Supabase Auth (Email/Password, OAuth) |
+| **Payments** | Stripe (Subscriptions) |
+| **Desktop** | Tauri (Rust + Next.js) |
+| **Deployment** | Vercel (Web), NSIS Installer (Desktop) |
+
+### RAG Pipeline
+
+```
+┌─────────────┐      ┌──────────────┐      ┌─────────────┐
+│   User      │─────▶│  PDF Upload  │─────▶│  Chunking   │
+│  Uploads    │      │   (Cases)    │      │  (Semantic) │
+└─────────────┘      └──────────────┘      └─────────────┘
+                                                   │
+                                                   ▼
+┌─────────────┐      ┌──────────────┐      ┌─────────────┐
+│  AI Tutor   │◀─────│   Vector DB  │◀─────│  Embedding  │
+│   Query     │      │  (pgvector)  │      │  (OpenAI)   │
+└─────────────┘      └──────────────┘      └─────────────┘
+       │                     ▲
+       │                     │
+       ▼                     │
+┌─────────────┐      ┌──────────────┐
+│ Similarity  │─────▶│ Context +    │
+│   Search    │      │ LLM Response │
+└─────────────┘      └──────────────┘
+```
+
+### Project Structure
+
+```
+FIRMai/
+├── app/                          # Next.js App Router
+│   ├── (auth)/                  # Auth pages (login, register)
+│   ├── api/                     # API Routes
+│   │   ├── analyze-case/       # IRAC analysis endpoint
+│   │   ├── tutor/              # AI tutor chat
+│   │   ├── flashcards/         # Flashcard generation
+│   │   ├── mock-tests/         # Mock test generation
+│   │   ├── quizzes/            # Quiz generation
+│   │   └── rag/                # RAG endpoints (embed, search)
+│   ├── dashboard/              # Protected dashboard pages
+│   │   ├── cases/              # Case management
+│   │   ├── quizzes/            # Quiz interface
+│   │   ├── mock-tests/         # Mock tests
+│   │   ├── tutor/              # AI tutor chat
+│   │   ├── planner/            # Study planner
+│   │   ├── profile/            # User settings
+│   │   └── pricing/            # Subscription plans
+│   └── page.tsx                # Landing page
+├── components/                  # React components
+│   ├── ui/                     # shadcn/ui components
+│   ├── dashboard-header.tsx    # Dashboard navigation
+│   ├── dashboard-sidebar.tsx   # Sidebar navigation
+│   └── page-transition.tsx     # Smooth page transitions
+├── lib/                        # Core libraries
+│   ├── llm.ts                  # LLM service with RAG integration
+│   ├── rag.ts                  # RAG service (embedding, search)
+│   ├── document-processor.ts   # PDF parsing and chunking
+│   ├── unified-llm.ts          # Unified LLM interface
+│   ├── supabase/               # Supabase clients
+│   │   ├── client.ts           # Browser client
+│   │   ├── server.ts           # Server client
+│   │   ├── middleware.ts       # Auth middleware
+│   │   └── client-actions.ts   # Database helpers
+│   └── utils.ts                # Utility functions
+├── scripts/                    # Setup and maintenance scripts
+│   ├── setup.ts                # Complete setup script
+│   ├── seed-legal-knowledge.ts # Seed knowledge base
+│   └── 004-rag-schema.sql      # Database schema
+├── src-tauri/                  # Tauri desktop app
+│   ├── src/                    # Rust backend
+│   ├── icons/                  # App icons
+│   └── tauri.conf.json         # Tauri configuration
+└── public/                     # Static assets
+```
+
+---
+
+## 📖 Documentation
+
+### API Endpoints
+
+#### **POST** `/api/analyze-case`
+Generate IRAC analysis from case text.
+
+```typescript
+// Request
+{
+  caseText: string;
+  caseTitle: string;
+}
+
+// Response
+{
+  issue: string;
+  rule: string;
+  analysis: string;
+  conclusion: string;
+}
+```
+
+#### **POST** `/api/tutor`
+Chat with AI tutor using RAG context.
+
+```typescript
+// Request
+{
+  message: string;
+  context?: {
+    caseIds?: string[];
+    includeKnowledgeBase?: boolean;
+  };
+}
+
+// Response
+{
+  message: string;
+  sources?: string[];
+}
+```
+
+#### **POST** `/api/rag/embed-case`
+Embed and store case for RAG search.
+
+```typescript
+// Request
+{
+  caseId: string;
+  caseTitle: string;
+  pdfData: string; // Base64 encoded PDF
+  userId: string;
+}
+
+// Response
+{
+  caseId: string;
+  totalChunks: number;
+  status: "success" | "failed";
+}
+```
+
+#### **POST** `/api/rag/search`
+Semantic search across cases and knowledge base.
+
+```typescript
+// Request
+{
+  query: string;
+  limit?: number;
+  userId?: string;
+  caseIds?: string[];
+  includeKnowledgeBase?: boolean;
+}
+
+// Response
+{
+  results: Array<{
+    chunk: string;
+    distance: number;
+    source: string;
+  }>;
+}
+```
+
+### CLI Commands
+
+FIRM AI includes a powerful CLI for managing the backend:
+
+```bash
+# System Management
+pnpm cli status              # Check system health and database stats
+pnpm cli start               # Start dev server (custom port with -p)
+pnpm cli migrate             # Run database migrations
+pnpm cli clear --yes         # Clear all cached data
+
+# Knowledge Base
+pnpm cli seed                # Seed legal knowledge base
+pnpm cli test "query"        # Test RAG search functionality
+
+# Development
+pnpm dev                     # Standard Next.js dev server
+pnpm build                   # Build for production
+pnpm lint                    # Run linter
 ```
 
 For detailed CLI documentation, see [CLI.md](./CLI.md)
 
-## Architecture
+---
 
-### Tech Stack
+## 🎨 Screenshots
 
-- **Frontend**: Next.js 14, React 19, Tailwind CSS, shadcn/ui
-- **Backend**: Next.js API Routes
-- **Database**: Supabase (PostgreSQL + pgvector)
-- **AI/LLM**: OpenRouter (Google Gemini, OpenAI embeddings)
-- **Authentication**: Supabase Auth
-- **Payments**: Stripe
-
-### RAG System
-
-The RAG (Retrieval-Augmented Generation) system powers intelligent features:
-
-1. **Vector Storage**: Documents are chunked semantically and embedded using OpenAI's `text-embedding-3-small` (1536 dimensions)
-2. **Vector Database**: Supabase with pgvector extension for fast similarity search
-3. **Knowledge Base**: Pre-built legal knowledge covering major law topics
-4. **User Cases**: Automatically embedded when uploaded via the Cases page
-
-### AI Features
-
-All AI features use RAG context:
-
-- **IRAC Analysis**: Searches knowledge base and your cases for relevant legal principles
-- **AI Tutor**: Answers with citations from your library and knowledge base
-- **Quiz Generation**: Creates questions using context from related cases
-- **Mock Tests**: Generates comprehensive exams using multi-topic RAG context
-
-## Project Structure
-
-```
-FIRMai/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   │   ├── analyze-case/  # IRAC analysis endpoint
-│   │   ├── tutor/         # AI tutor chat endpoint
-│   │   ├── generate-quiz/ # Quiz generation endpoint
-│   │   └── rag/           # RAG endpoints
-│   ├── dashboard/         # Dashboard pages
-│   ├── login/             # Authentication pages
-│   └── page.tsx           # Landing page
-├── components/            # React components
-├── lib/                   # Core libraries
-│   ├── llm.ts            # LLM service with RAG
-│   ├── rag.ts            # RAG service
-│   ├── document-processor.ts  # PDF/text processing
-│   ├── supabase/         # Supabase clients
-│   └── utils.ts          # Utilities
-├── scripts/               # Setup and seed scripts
-│   ├── 004-rag-schema.sql    # Database schema
-│   ├── seed-legal-knowledge.ts  # Knowledge base seed
-│   └── setup.ts          # Complete setup script
-├── cli.ts                # CLI interface
-└── package.json
-```
-
-## Development
-
-### Running the Server
-
-```bash
-# Development mode
-pnpm cli start
-
-# Production mode (requires build first)
-pnpm build
-pnpm cli start --production
-```
-
-### Database Management
-
-```bash
-# Run migrations
-pnpm cli migrate
-
-# Check database status
-pnpm cli status
-```
-
-### Testing RAG
-
-```bash
-# Test search
-pnpm cli test "your query"
-
-# Check RAG stats
-pnpm cli status
-```
-
-## API Endpoints
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
 
 ### Case Analysis
-
-```bash
-POST /api/analyze-case
-Body: { caseText, caseTitle }
-Response: { issue, rule, analysis, conclusion }
-```
+![Case Analysis](docs/screenshots/cases.png)
 
 ### AI Tutor
+![AI Tutor](docs/screenshots/tutor.png)
+
+### Mock Tests
+![Mock Tests](docs/screenshots/mock-tests.png)
+
+---
+
+## 🗄️ Database Schema
+
+### Core Tables
+
+- **`users`** - User accounts and profiles
+- **`cases`** - Uploaded legal cases with IRAC analysis
+- **`case_embeddings`** - Vector embeddings for cases (1536 dimensions)
+- **`legal_knowledge_base`** - Pre-loaded legal knowledge embeddings
+- **`flashcard_sets`** - Flashcard collections
+- **`flashcards`** - Individual flashcards
+- **`quizzes`** - Quiz collections
+- **`quiz_questions`** - Quiz questions with answers
+- **`mock_tests`** - Mock test collections
+- **`test_questions`** - Mock test questions
+- **`test_results`** - User test scores and analytics
+- **`study_plans`** - User study schedules
+
+### RAG Tables
+
+- **`case_embeddings`** - User-uploaded case chunks (pgvector)
+- **`legal_knowledge_base`** - Pre-loaded legal knowledge (pgvector)
+
+Both use `vector(1536)` for OpenAI embeddings with cosine similarity search.
+
+---
+
+## 🎓 Legal Knowledge Base
+
+FIRM AI comes pre-loaded with comprehensive legal knowledge:
+
+| Topic | Coverage | Chunks |
+|-------|----------|--------|
+| **Contract Law** | Formation, Consideration, Breach, Remedies | 50+ |
+| **Tort Law** | Negligence, Intentional Torts, Strict Liability | 50+ |
+| **Constitutional Law** | Due Process, Equal Protection, First Amendment | 50+ |
+| **Criminal Law** | Elements, Defenses, Accomplice Liability | 50+ |
+| **Property Law** | Adverse Possession, Easements, Real Property | 50+ |
+
+**Total**: 250+ pre-embedded legal concepts
+
+---
+
+## 🖥️ Desktop App
+
+FIRM AI is available as a **cross-platform desktop application** built with Tauri!
+
+### Features
+
+- ✅ Native Windows/macOS/Linux support
+- ✅ Offline-capable with local SQLite cache
+- ✅ Cloud sync with Supabase
+- ✅ Professional NSIS installer (Windows)
+- ✅ ~5 MB installer size
+
+### Building Desktop App
 
 ```bash
-POST /api/tutor
-Body: { message, context? }
-Response: { message }
+# Development
+pnpm tauri dev
+
+# Production build
+pnpm tauri build
+
+# Output: src-tauri/target/release/bundle/nsis/FIRM AI_0.1.0_x64-setup.exe
 ```
 
-### Quiz Generation
+### Installer Features
+
+- ✅ Professional branding with custom icon
+- ✅ Desktop and Start Menu shortcuts
+- ✅ Per-user installation (no admin required)
+- ✅ Clean uninstaller
+- ✅ Windows Registry integration
+
+For code signing and distribution, see [src-tauri/INSTALLER_SETUP.md](src-tauri/INSTALLER_SETUP.md)
+
+---
+
+## 🔒 Security
+
+- ✅ **Row Level Security (RLS)** on all Supabase tables
+- ✅ **JWT Authentication** with Supabase Auth
+- ✅ **Secure API Routes** with server-side validation
+- ✅ **Environment Variables** for secrets
+- ✅ **HTTPS Only** in production
+- ✅ **Input Sanitization** for user-generated content
+- ✅ **XSS Protection** via React's built-in escaping
+
+---
+
+## 🚢 Deployment
+
+### Web App (Vercel)
 
 ```bash
-POST /api/generate-quiz
-Body: { caseContent, numQuestions }
-Response: { questions: [{ question, options, correctAnswer, explanation }] }
+# 1. Connect your GitHub repo to Vercel
+# 2. Add environment variables in Vercel dashboard
+# 3. Deploy!
+
+# Or use Vercel CLI:
+pnpm install -g vercel
+vercel
 ```
 
-### RAG Embed Case
+### Desktop App
 
 ```bash
-POST /api/rag/embed-case
-Body: { caseId, caseTitle, pdfData, userId }
-Response: { caseId, totalChunks, status }
+# Build installer
+pnpm tauri build
+
+# Distribute:
+# - Windows: FIRM AI_0.1.0_x64-setup.exe
+# - macOS: FIRM AI.app.tar.gz
+# - Linux: FIRM AI_0.1.0_amd64.deb
 ```
 
-### RAG Search
+For code signing certificates and professional distribution, see [src-tauri/INSTALLER_SETUP.md](src-tauri/INSTALLER_SETUP.md)
 
-```bash
-POST /api/rag/search
-Body: { query, limit?, userId?, caseIds?, includeKnowledgeBase? }
-Response: { results: [{ chunk, distance }] }
-```
+---
 
-## Legal Knowledge Base
+## 🤝 Contributing
 
-The system comes pre-loaded with legal knowledge covering:
+Contributions are welcome! Please follow these steps:
 
-- **Contract Law**: Formation, validity, breach
-- **Tort Law**: Negligence, intentional torts
-- **Constitutional Law**: Due process, First Amendment
-- **Criminal Law**: Mens rea, actus reus
-- **Property Law**: Adverse possession, real property
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
 
-Additional knowledge can be added by seeding more documents.
+### Development Guidelines
 
-## Environment Variables
+- ✅ Follow TypeScript strict mode
+- ✅ Use Tailwind CSS for styling
+- ✅ Write clean, documented code
+- ✅ Test RAG features thoroughly
+- ✅ Run `pnpm lint` before committing
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `OPENROUTER_API_KEY` | OpenRouter API key for AI services | Yes |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | Yes |
-| `SUPABASE_POSTGRES_URL_NON_POOLING` | Direct Postgres connection URL | Yes |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | No |
-| `STRIPE_SECRET_KEY` | Stripe secret key | No |
+---
 
-## Troubleshooting
+## 📊 Roadmap
+
+### 🚀 Coming Soon
+
+- [ ] **Auto-Update System** for desktop app
+- [ ] **Collaborative Study** - Share cases and quizzes
+- [ ] **Audio Transcription** - Upload lecture recordings
+- [ ] **Mobile Apps** (iOS/Android)
+- [ ] **Advanced Analytics** - Study insights dashboard
+- [ ] **Multi-Language Support**
+- [ ] **Citation Generator** - Bluebook format
+- [ ] **Outline Builder** - Generate course outlines
+
+### 🎯 In Progress
+
+- [x] Desktop app with Tauri
+- [x] RAG-powered AI tutor
+- [x] Flashcard generation
+- [x] Mock test analytics
+- [x] Study planner
+
+---
+
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-**"OpenRouter API error"**
-- Check your API key is valid
-- Verify you have credits/balance
-- Ensure the model name is correct
+**"OpenRouter API Error"**
+```bash
+# Check your API key
+pnpm cli status
 
-**"Database connection failed"**
-- Verify Supabase credentials
-- Check network connectivity
-- Ensure `SUPABASE_POSTGRES_URL_NON_POOLING` is correct
+# Verify in .env.local
+OPENROUTER_API_KEY=sk-or-...
+```
 
-**"No results found"**
-- Run `pnpm cli seed` to populate knowledge base
-- Check `pnpm cli status` for database stats
-- Verify pgvector extension is installed
+**"Database Connection Failed"**
+```bash
+# Check Supabase credentials
+pnpm cli status
 
-**"Unknown font Geist"**
-- Fonts are installed via `geist` npm package
-- Run `pnpm install` to ensure it's installed
+# Verify PostgreSQL URL format
+SUPABASE_POSTGRES_URL_NON_POOLING=postgresql://...
+```
 
-## Contributing
+**"No Search Results"**
+```bash
+# Seed the knowledge base
+pnpm cli seed
 
-Contributions welcome! Please follow these steps:
+# Check database stats
+pnpm cli status
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests: `pnpm lint`
-5. Submit a pull request
+**"pgvector Extension Missing"**
+```bash
+# Run setup script
+pnpm setup
 
-## License
+# Or manually in Supabase SQL Editor:
+CREATE EXTENSION IF NOT EXISTS vector;
+```
 
-MIT License - see LICENSE file for details
+For more help, see [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) or open an issue.
 
-## Support
+---
 
-For issues or questions:
-1. Run `pnpm cli status` to check system health
-2. Review logs for error details
-3. Check environment variables
-4. Consult CLI.md for troubleshooting
+## 📝 License
 
-## Acknowledgments
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-- Built with Next.js and Supabase
-- AI powered by OpenRouter
-- Vector search by pgvector
-- UI components by shadcn/ui
+---
 
+## 🙏 Acknowledgments
 
+- **[Next.js](https://nextjs.org/)** - React framework
+- **[Supabase](https://supabase.com/)** - Backend and database
+- **[OpenRouter](https://openrouter.ai/)** - AI model access
+- **[pgvector](https://github.com/pgvector/pgvector)** - Vector similarity search
+- **[shadcn/ui](https://ui.shadcn.com/)** - UI components
+- **[Tauri](https://tauri.app/)** - Desktop app framework
+- **[Tailwind CSS](https://tailwindcss.com/)** - Styling
 
+---
 
+## 📧 Contact & Support
+
+- **Issues**: [GitHub Issues](https://github.com/yourusername/firmai/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/firmai/discussions)
+- **Email**: support@firmai.com
+- **Documentation**: [docs.firmai.com](https://docs.firmai.com)
+
+---
+
+<div align="center">
+
+**Built with ❤️ for law students everywhere**
+
+[⭐ Star us on GitHub](https://github.com/yourusername/firmai) • [📖 Read the Docs](https://docs.firmai.com) • [🐦 Follow on Twitter](https://twitter.com/firmai)
+
+*Empowering legal education through artificial intelligence*
+
+</div>

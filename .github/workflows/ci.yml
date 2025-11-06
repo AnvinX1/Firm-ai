@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-and-build:
+    name: Lint and Build
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: 🔍 Run linter
+        run: pnpm lint
+      
+      - name: 🏗️ Build project
+        run: pnpm build
+        env:
+          # Use dummy env vars for build
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy_key
+          SUPABASE_SERVICE_ROLE_KEY: dummy_key
+          OPENROUTER_API_KEY: dummy_key
+      
+      - name: ✅ Check build output
+        run: |
+          if [ ! -d "out" ]; then
+            echo "Build output directory not found"
+            exit 1
+          fi
+          echo "Build successful!"
+  
+  type-check:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: 🔍 Run TypeScript type check
+        run: pnpm tsc --noEmit
+  
+  security-check:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: 🔒 Run security audit
+        run: pnpm audit --audit-level=moderate
+        continue-on-error: true
+
