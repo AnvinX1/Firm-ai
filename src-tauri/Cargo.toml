@@ -25,9 +25,13 @@ tokio = { version = "1", features = ["full"] }
 anyhow = "1.0"
 thiserror = "1.0"
 regex = "1.10"
+dotenv = "0.15"
 postgrest = "1.5"
-rusqlite = { version = "0.30", features = ["bundled"] }
-tokio-rusqlite = "0.5"
+# rusqlite removed to avoid conflict with tauri-plugin-sql
+# tokio-rusqlite removed
+sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio", "tls-native-tls"] }
+tauri-plugin-sql = { version = "2.0", features = ["sqlite"] }
+fastembed = "4.0"
 chrono = { version = "0.4", features = ["serde"] }
 lopdf = "0.33"
 uuid = { version = "1.10", features = ["v4", "serde"] }

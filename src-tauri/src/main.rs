@@ -7,6 +7,8 @@ use std::path::PathBuf;
 mod error;
 mod config;
 mod db;
+mod rag;
+mod llm;
 
 use config::AppConfig;
 
@@ -35,16 +37,25 @@ async fn read_file(path: String) -> Result<String, String> {
 }
 
 fn main() {
+    // Load .env file
+    dotenv::dotenv().ok();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_sql::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             greet,
             get_app_version,
             save_file,
             read_file,
+            rag::ingest_document,
+            rag::query_context,
+            llm::llm_chat,
+            llm::generate_irac,
+            llm::tutor_chat,
         ])
         .setup(|app| {
             // Set window title and configure window
@@ -80,6 +91,30 @@ fn main() {
             println!("Database path: {:?}", db_path);
             println!("OpenRouter API key configured: {}", config.openrouter_api_key.is_some());
             println!("Supabase configured: {}", config.supabase_url.is_some());
+            
+            // Initialize HybridStorage
+            let storage = db::HybridStorage::new(
+                db_path.clone(),
+                config.supabase_url.clone(),
+                config.supabase_key.clone()
+            );
+            
+            // Initialize storage (async)
+            tauri::async_runtime::block_on(async {
+                storage.initialize().await.expect("failed to initialize storage");
+            });
+            
+            app.manage(storage);
+            
+            // Initialize RagState
+            let rag_state = rag::RagState::new();
+            app.manage(rag_state);
+
+            // Initialize LLMService
+            let llm_service = llm::LLMService::new(
+                config.openrouter_api_key.clone().unwrap_or_default()
+            );
+            app.manage(llm_service);
             
             Ok(())
         })

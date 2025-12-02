@@ -14,11 +14,8 @@ pub enum AppError {
     #[error("Supabase error: {0}")]
     Supabase(String),
     
-    #[error("SQLite error: {0}")]
-    Sqlite(#[from] rusqlite::Error),
-    
-    #[error("Tokio SQLite error: {0}")]
-    TokioSqlite(#[from] tokio_rusqlite::Error),
+    #[error("Sqlx error: {0}")]
+    Sqlx(#[from] sqlx::Error),
     
     // Network errors
     #[error("Network request failed: {0}")]
@@ -117,7 +114,7 @@ impl AppError {
     /// Convert error to user-friendly message
     pub fn user_message(&self) -> String {
         match self {
-            Self::Database(_) | Self::Sqlite(_) | Self::TokioSqlite(_) => {
+            Self::Database(_) | Self::Sqlx(_) => {
                 "A database error occurred. Please try again.".to_string()
             }
             Self::Supabase(_) => {

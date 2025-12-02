@@ -5,7 +5,7 @@
 
 use crate::error::{AppError, AppResult};
 use postgrest::Postgrest;
-use rusqlite::Connection;
+use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -27,32 +27,26 @@ impl SupabaseClient {
         Self { client, api_key }
     }
 
-    /// Get a reference to the postgrest client
     pub fn client(&self) -> &Postgrest {
         &self.client
     }
 
-    /// Get the API key
     pub fn api_key(&self) -> &str {
         &self.api_key
     }
 
-    /// Execute a select query
     pub async fn select(&self, table: &str) -> AppResult<postgrest::Builder> {
         Ok(self.client.from(table).select("*"))
     }
 
-    /// Execute an insert query
     pub async fn insert(&self, table: &str, data: &str) -> AppResult<postgrest::Builder> {
         Ok(self.client.from(table).insert(data))
     }
 
-    /// Execute an update query
     pub async fn update(&self, table: &str, data: &str) -> AppResult<postgrest::Builder> {
         Ok(self.client.from(table).update(data))
     }
 
-    /// Execute a delete query
     pub async fn delete(&self, table: &str) -> AppResult<postgrest::Builder> {
         Ok(self.client.from(table).delete())
     }
@@ -62,42 +56,47 @@ impl SupabaseClient {
 #[derive(Clone)]
 pub struct SqliteCache {
     db_path: PathBuf,
-    connection: Arc<Mutex<Option<Connection>>>,
+    pool: Arc<Mutex<Option<Pool<Sqlite>>>>,
 }
 
 impl SqliteCache {
     pub fn new(db_path: PathBuf) -> Self {
         Self {
             db_path,
-            connection: Arc::new(Mutex::new(None)),
+            pool: Arc::new(Mutex::new(None)),
         }
     }
 
     /// Initialize the SQLite database with schema
     pub async fn initialize(&self) -> AppResult<()> {
-        let mut conn_guard = self.connection.lock().await;
+        let mut pool_guard = self.pool.lock().await;
         
         // Create parent directory if it doesn't exist
         if let Some(parent) = self.db_path.parent() {
             std::fs::create_dir_all(parent)?;
         }
 
-        let conn = Connection::open(&self.db_path)?;
+        let pool = SqlitePoolOptions::new()
+            .max_connections(5)
+            .connect_with(
+                sqlx::sqlite::SqliteConnectOptions::new()
+                    .filename(&self.db_path)
+                    .create_if_missing(true)
+                    .foreign_keys(true)
+            )
+            .await?;
 
-        // Enable foreign keys
-        conn.execute("PRAGMA foreign_keys = ON;", [])?;
+        // Create tables
+        self.create_schema(&pool).await?;
 
-        // Create tables (will be populated by migration)
-        self.create_schema(&conn)?;
-
-        *conn_guard = Some(conn);
+        *pool_guard = Some(pool);
         Ok(())
     }
 
     /// Create the local database schema
-    fn create_schema(&self, conn: &Connection) -> AppResult<()> {
+    async fn create_schema(&self, pool: &Pool<Sqlite>) -> AppResult<()> {
         // Cases table
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS cases (
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
@@ -112,12 +111,11 @@ impl SqliteCache {
                 updated_at TEXT NOT NULL,
                 synced INTEGER DEFAULT 0,
                 dirty INTEGER DEFAULT 0
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Documents table
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS documents (
                 id TEXT PRIMARY KEY,
                 user_id TEXT,
@@ -132,27 +130,26 @@ impl SqliteCache {
                 synced INTEGER DEFAULT 0,
                 dirty INTEGER DEFAULT 0,
                 FOREIGN KEY (case_id) REFERENCES cases(id) ON DELETE CASCADE
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Document chunks table (cached)
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS document_chunks (
                 id TEXT PRIMARY KEY,
                 document_id TEXT NOT NULL,
                 chunk_index INTEGER NOT NULL,
                 chunk_text TEXT NOT NULL,
                 metadata TEXT,
+                embedding BLOB,
                 created_at TEXT NOT NULL,
                 synced INTEGER DEFAULT 0,
                 FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Flashcard sets table
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS flashcard_sets (
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
@@ -162,12 +159,11 @@ impl SqliteCache {
                 updated_at TEXT NOT NULL,
                 synced INTEGER DEFAULT 0,
                 dirty INTEGER DEFAULT 0
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Flashcards table
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS flashcards (
                 id TEXT PRIMARY KEY,
                 set_id TEXT NOT NULL,
@@ -177,12 +173,11 @@ impl SqliteCache {
                 synced INTEGER DEFAULT 0,
                 dirty INTEGER DEFAULT 0,
                 FOREIGN KEY (set_id) REFERENCES flashcard_sets(id) ON DELETE CASCADE
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Mock tests table
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS mock_tests (
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
@@ -192,12 +187,11 @@ impl SqliteCache {
                 created_at TEXT NOT NULL,
                 synced INTEGER DEFAULT 0,
                 dirty INTEGER DEFAULT 0
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Test results table
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS test_results (
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
@@ -209,12 +203,11 @@ impl SqliteCache {
                 synced INTEGER DEFAULT 0,
                 dirty INTEGER DEFAULT 0,
                 FOREIGN KEY (test_id) REFERENCES mock_tests(id) ON DELETE CASCADE
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Study plans table
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS study_plans (
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
@@ -228,12 +221,11 @@ impl SqliteCache {
                 updated_at TEXT NOT NULL,
                 synced INTEGER DEFAULT 0,
                 dirty INTEGER DEFAULT 0
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Sync queue table
-        conn.execute(
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS sync_queue (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 operation_type TEXT NOT NULL,
@@ -242,41 +234,28 @@ impl SqliteCache {
                 data TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 attempts INTEGER DEFAULT 0
-            )",
-            [],
-        )?;
+            )"
+        ).execute(pool).await?;
 
         // Create indexes
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_user ON documents(user_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_case ON documents(case_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_chunks_document ON document_chunks(document_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_flashcard_sets_user ON flashcard_sets(user_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_flashcards_set ON flashcards(set_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_mock_tests_user ON mock_tests(user_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_test_results_user ON test_results(user_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_study_plans_user ON study_plans(user_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_sync_queue_table ON sync_queue(table_name, record_id)", [])?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_documents_user ON documents(user_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_documents_case ON documents(case_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_chunks_document ON document_chunks(document_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_flashcard_sets_user ON flashcard_sets(user_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_flashcards_set ON flashcards(set_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_mock_tests_user ON mock_tests(user_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_test_results_user ON test_results(user_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_study_plans_user ON study_plans(user_id)").execute(pool).await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_sync_queue_table ON sync_queue(table_name, record_id)").execute(pool).await?;
 
         Ok(())
     }
 
-    /// Get a connection to the database
-    pub async fn get_connection(&self) -> AppResult<Arc<Mutex<Option<Connection>>>> {
-        Ok(self.connection.clone())
-    }
-
-    /// Execute a query with the connection
-    pub async fn execute<F, R>(&self, f: F) -> AppResult<R>
-    where
-        F: FnOnce(&Connection) -> AppResult<R> + Send + 'static,
-        R: Send + 'static,
-    {
-        let conn_guard = self.connection.lock().await;
-        match conn_guard.as_ref() {
-            Some(conn) => f(conn),
-            None => Err(AppError::Database("Database not initialized".to_string())),
-        }
+    /// Get the connection pool
+    pub async fn get_pool(&self) -> AppResult<Pool<Sqlite>> {
+        let guard = self.pool.lock().await;
+        guard.clone().ok_or(AppError::Database("Database not initialized".to_string()))
     }
 }
 
@@ -359,4 +338,3 @@ pub struct SyncOperation {
     pub record_id: String,
     pub data: String,
 }
-

@@ -4,8 +4,11 @@
  */
 
 use crate::error::{AppError, AppResult};
-use crate::rag::RAGService;
+use crate::rag::RagState;
+use crate::db::HybridStorage;
 use serde::{Deserialize, Serialize};
+use tauri::State;
+
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Message {
@@ -53,8 +56,7 @@ pub struct LLMService {
     api_key: String,
     base_url: String,
     default_model: String,
-    #[allow(dead_code)]
-    rag_service: Option<RAGService>,
+
 }
 
 impl LLMService {
@@ -63,16 +65,6 @@ impl LLMService {
             api_key,
             base_url: "https://openrouter.ai/api/v1".to_string(),
             default_model: "google/gemini-2.0-flash-exp".to_string(),
-            rag_service: None,
-        }
-    }
-
-    pub fn with_rag(api_key: String, rag_service: RAGService) -> Self {
-        Self {
-            api_key,
-            base_url: "https://openrouter.ai/api/v1".to_string(),
-            default_model: "google/gemini-2.0-flash-exp".to_string(),
-            rag_service: Some(rag_service),
         }
     }
 
@@ -124,6 +116,8 @@ impl LLMService {
         &self,
         case_text: String,
         options: Option<IRACOptions>,
+        rag: Option<State<'_, RagState>>,
+        storage: Option<State<'_, HybridStorage>>,
     ) -> AppResult<IRACResult> {
         let opts = options.unwrap_or_default();
         
@@ -143,9 +137,15 @@ Guidelines:
         // Search for relevant context if enabled
         let mut context_info = String::new();
         if opts.include_context.unwrap_or(true) {
-            // In a real implementation, you'd search the database here
-            // For now, we'll just add a placeholder
-            context_info = "\n\nRelevant Legal Context:\n[Context would be retrieved from database]".to_string();
+            if let (Some(rag), Some(storage)) = (rag, storage) {
+                // Search for context using the case text as query (first 100 chars)
+                let query = case_text.chars().take(100).collect::<String>();
+                if let Ok(results) = crate::rag::search_context(storage, rag, query, 3).await {
+                    if !results.is_empty() {
+                        context_info = format!("\n\nRelevant Legal Context:\n{}", results.join("\n\n"));
+                    }
+                }
+            }
         }
 
         let user_prompt = format!(
@@ -218,6 +218,8 @@ Guidelines:
         &self,
         user_message: String,
         options: Option<TutorOptions>,
+        rag: Option<State<'_, RagState>>,
+        storage: Option<State<'_, HybridStorage>>,
     ) -> AppResult<String> {
         let opts = options.unwrap_or_default();
         
@@ -251,8 +253,13 @@ Guidelines:
 
         // Search for relevant context if enabled
         if opts.include_context.unwrap_or(true) {
-            // In a real implementation, you'd search the database here
-            context_prompt.push_str("\n\nRelevant Legal Reference:\n[Context would be retrieved from database]");
+            if let (Some(rag), Some(storage)) = (rag, storage) {
+                if let Ok(results) = crate::rag::search_context(storage, rag, user_message.clone(), 3).await {
+                    if !results.is_empty() {
+                        context_prompt.push_str(&format!("\n\nRelevant Legal Reference:\n{}", results.join("\n\n")));
+                    }
+                }
+            }
         }
 
         let messages = vec![
@@ -278,14 +285,14 @@ Guidelines:
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Deserialize)]
 pub struct ChatOptions {
     pub model: Option<String>,
     pub temperature: Option<f64>,
     pub max_tokens: Option<u32>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Deserialize)]
 pub struct IRACOptions {
     #[allow(dead_code)]
     pub user_id: Option<String>,
@@ -294,7 +301,7 @@ pub struct IRACOptions {
     pub include_context: Option<bool>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Deserialize)]
 pub struct TutorOptions {
     pub case_history: Option<Vec<CaseHistory>>,
     pub study_topic: Option<String>,
@@ -303,7 +310,7 @@ pub struct TutorOptions {
     pub include_context: Option<bool>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CaseHistory {
     pub title: String,
     pub summary: String,
@@ -315,4 +322,60 @@ pub struct IRACResult {
     pub rule: String,
     pub analysis: String,
     pub conclusion: String,
+}
+
+// Tauri Commands
+
+#[tauri::command]
+pub async fn llm_chat(
+    service: State<'_, LLMService>,
+    messages: Vec<Message>,
+    model: Option<String>,
+    temperature: Option<f64>,
+    max_tokens: Option<u32>,
+) -> Result<String, String> {
+    let options = ChatOptions {
+        model,
+        temperature,
+        max_tokens,
+    };
+    service.chat(messages, options).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn generate_irac(
+    service: State<'_, LLMService>,
+    rag: State<'_, RagState>,
+    storage: State<'_, HybridStorage>,
+    case_text: String,
+    user_id: Option<String>,
+    case_ids: Option<Vec<String>>,
+    include_context: Option<bool>,
+) -> Result<IRACResult, String> {
+    let options = IRACOptions {
+        user_id,
+        case_ids,
+        include_context,
+    };
+    service.generate_irac(case_text, Some(options), Some(rag), Some(storage)).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn tutor_chat(
+    service: State<'_, LLMService>,
+    rag: State<'_, RagState>,
+    storage: State<'_, HybridStorage>,
+    user_message: String,
+    case_history: Option<Vec<CaseHistory>>,
+    study_topic: Option<String>,
+    user_id: Option<String>,
+    include_context: Option<bool>,
+) -> Result<String, String> {
+    let options = TutorOptions {
+        case_history,
+        study_topic,
+        user_id,
+        include_context,
+    };
+    service.tutor_chat(user_message, Some(options), Some(rag), Some(storage)).await.map_err(|e| e.to_string())
 }

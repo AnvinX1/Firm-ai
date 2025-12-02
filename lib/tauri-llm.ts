@@ -23,28 +23,18 @@ interface CaseHistory {
 }
 
 class TauriLLMService {
-  private apiKey: string
-
   constructor() {
-    // Get API key from environment or config
-    this.apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || ""
-    if (!this.apiKey) {
-      console.warn("OpenRouter API key not found. AI features will be limited.")
-    }
+    // API key is managed by the backend
   }
 
   /**
    * Generate embedding using Rust backend
    */
   async generateEmbedding(text: string): Promise<number[]> {
-    if (!this.apiKey) {
-      throw new Error("OpenRouter API key is not configured")
-    }
-
     try {
+      // Note: This command needs to be implemented in backend if used
       const embedding = await invoke<number[]>("generate_embedding", {
         text,
-        apiKey: this.apiKey,
       })
       return embedding
     } catch (error) {
@@ -57,14 +47,10 @@ class TauriLLMService {
    * Generate embeddings for multiple texts
    */
   async generateEmbeddings(texts: string[]): Promise<number[][]> {
-    if (!this.apiKey) {
-      throw new Error("OpenRouter API key is not configured")
-    }
-
     try {
+      // Note: This command needs to be implemented in backend if used
       const embeddings = await invoke<number[][]>("generate_embeddings", {
         texts,
-        apiKey: this.apiKey,
       })
       return embeddings
     } catch (error) {
@@ -84,17 +70,12 @@ class TauriLLMService {
       max_tokens?: number
     } = {}
   ): Promise<string> {
-    if (!this.apiKey) {
-      throw new Error("OpenRouter API key is not configured")
-    }
-
     try {
       const response = await invoke<string>("llm_chat", {
         messages: messages.map((m) => ({
           role: m.role,
           content: m.content,
         })),
-        apiKey: this.apiKey,
         model: options.model,
         temperature: options.temperature,
         max_tokens: options.max_tokens,
@@ -117,14 +98,9 @@ class TauriLLMService {
       includeContext?: boolean
     } = {}
   ): Promise<IRACResult> {
-    if (!this.apiKey) {
-      throw new Error("OpenRouter API key is not configured")
-    }
-
     try {
       const result = await invoke<IRACResult>("generate_irac", {
         caseText,
-        apiKey: this.apiKey,
         userId: options.userId,
         caseIds: options.caseIds,
         includeContext: options.includeContext ?? true,
@@ -148,14 +124,9 @@ class TauriLLMService {
       includeContext?: boolean
     } = {}
   ): Promise<string> {
-    if (!this.apiKey) {
-      throw new Error("OpenRouter API key is not configured")
-    }
-
     try {
       const response = await invoke<string>("tutor_chat", {
         userMessage,
-        apiKey: this.apiKey,
         caseHistory: context.caseHistory,
         studyTopic: context.studyTopic,
         userId: context.userId,
@@ -180,15 +151,11 @@ class TauriLLMService {
       includeContext?: boolean
     } = {}
   ): Promise<QuizQuestion[]> {
-    if (!this.apiKey) {
-      throw new Error("OpenRouter API key is not configured")
-    }
-
     try {
+      // Note: This command needs to be implemented in backend if used
       const response = await invoke<QuizQuestion[]>("generate_quiz_questions", {
         caseContent,
         numQuestions,
-        apiKey: this.apiKey,
         userId: options.userId,
         caseIds: options.caseIds,
         includeContext: options.includeContext ?? true,
@@ -214,4 +181,3 @@ export interface QuizQuestion {
   correct_answer: number
   explanation: string
 }
-

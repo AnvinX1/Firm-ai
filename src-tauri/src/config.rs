@@ -127,7 +127,8 @@ impl Default for AppConfig {
             database_path: "firm_ai.db".to_string(),
             models: ModelConfig::default(),
             sync_interval_seconds: 300, // 5 minutes
-            offline_mode: false,
+
+            offline_mode: true, // Force local storage as requested
         }
     }
 }
@@ -137,8 +138,12 @@ impl AppConfig {
     pub fn from_env() -> Self {
         Self {
             openrouter_api_key: std::env::var("OPENROUTER_API_KEY").ok(),
-            supabase_url: std::env::var("SUPABASE_URL").ok(),
-            supabase_key: std::env::var("SUPABASE_KEY").ok(),
+            supabase_url: std::env::var("SUPABASE_URL")
+                .or_else(|_| std::env::var("NEXT_PUBLIC_SUPABASE_URL"))
+                .ok(),
+            supabase_key: std::env::var("SUPABASE_KEY")
+                .or_else(|_| std::env::var("NEXT_PUBLIC_SUPABASE_ANON_KEY"))
+                .ok(),
             database_path: std::env::var("DATABASE_PATH")
                 .unwrap_or_else(|_| "firm_ai.db".to_string()),
             models: ModelConfig::from_env(),
@@ -149,7 +154,7 @@ impl AppConfig {
             offline_mode: std::env::var("OFFLINE_MODE")
                 .ok()
                 .and_then(|s| s.parse().ok())
-                .unwrap_or(false),
+                .unwrap_or(true), // Default to true for local storage
         }
     }
 
